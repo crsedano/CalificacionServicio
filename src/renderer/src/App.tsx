@@ -1,4 +1,4 @@
- /* eslint-disable */
+/* eslint-disable */
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { configuracion } from './type/configuracion'
@@ -9,6 +9,7 @@ import logo from './assets/logo.png'
 import Configuracion from './components/Configuracion'
 import axios from 'axios'
 import Loading from './components/Loading'
+
 function App(): JSX.Element {
   const [conf, setConfiguracion] = useState<configuracion>()
   const [posicion, setPosicion] = useState<number>(0)
@@ -20,24 +21,31 @@ function App(): JSX.Element {
   const [respCalificacion, setRespCalificacion] = useState<response<string>>({} as response<string>)
   const [loading, setLoading] = useState<boolean>(false)
   // const handleCloseApp = (): void => window.electron.ipcRenderer.send('cerrar-app')
+
+
   useEffect(() => {
     const obtenerConfiguracion = async (): Promise<void> => {
-     
-      const data = await window.CargaConfig.getConfiguracion()    
-      setConfiguracion(data)
+      
+     // const handleGetConfig = (): void => )
+      //const data = await window.CargaConfig.getConfiguracion()   
+      const configData = await (window as any).electronAPI.getConfig();      
+      setConfiguracion(configData)
     }
     obtenerConfiguracion()
     
   }, [])
+  const getPreguntas = async () => {
+    setLoading(true)
+    await axios.get(import.meta.env.VITE_URL_API + 'Pregunta/GetPreguntas?Id=' + conf?.OficinaId)
+      .then((response) => {
+        setPreguntas(response.data)
+      }).finally(()=>{
+        setLoading(false)
+      })
+  }
   useEffect(()=>{    
     if(conf?.OficinaId != null){
-      setLoading(true)
-      axios.get(import.meta.env.VITE_URL_API + 'Pregunta/GetPreguntas?Id=' + conf?.OficinaId)
-        .then((response) => {
-          setPreguntas(response.data)
-        }).finally(()=>{
-          setLoading(false)
-        })
+      getPreguntas()
       }
   },[conf])
   //const handleNotificacion = (): void => {
@@ -56,8 +64,7 @@ function App(): JSX.Element {
   //}
 
   const handleNext = (calificacion:number, id: number): void => {
-//console.log("llego el indicen "+id)
-//setPreguntas(preguntas.map((pregunta) => pregunta.id === id ? { ...pregunta, calificacion: calificacion } : pregunta))
+
  _calificacion.current.push({id,calificacion} as calificacionType)
     if (posicion < preguntas.data.length-1 ) {
       setPosicion(posicion + 1)
@@ -104,7 +111,11 @@ function App(): JSX.Element {
       }
     }
   } 
-  const handleInciar = (): void => {
+  const handleInciar = async () => {
+    
+    
+await getPreguntas()    
+
     setPosicion(0)
     setFinal(false)
   }

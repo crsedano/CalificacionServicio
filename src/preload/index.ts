@@ -1,7 +1,6 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer  } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { join } from 'path'
-import fs from 'fs'
+
 // Custom APIs for renderer
 const api = {}
 
@@ -12,17 +11,9 @@ if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
-    const filePath = join(__dirname, '..', '..', 'resources', 'config.json')
-
-    fs.readFile(filePath, 'utf8', (err, data) => {
-      if (err) {
-        console.error('Error al leer el archivo JSON:', err)
-        return
-      }
-      const jsonData = JSON.parse(data)
-      contextBridge.exposeInMainWorld('CargaConfig', {
-        getConfiguracion: () => jsonData
-      })
+    contextBridge.exposeInMainWorld('electronAPI', {
+      getConfig: () => ipcRenderer.invoke('get-config'),
+      saveConfig: (newConfig) => ipcRenderer.invoke('save-config', newConfig)
     })
   } catch (error) {
     console.error(error)

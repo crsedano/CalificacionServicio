@@ -1,8 +1,9 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
-import { join } from 'path'
+import path from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import fs from 'fs'
+
 
 function createWindow(): void {
   // Create the browser window.
@@ -15,14 +16,26 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      sandbox: false    
+      preload: path.join(__dirname, '../preload/index.js'),
+      sandbox: false
     }
   })
+  const configPath = path.join(app.getPath('userData'), 'config.json')
   //mainWindow.webContents.session.setProxy({ proxyRules: 'https://satisfaccion.upla.edu.pe' })
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+    if (!fs.existsSync(configPath)) {
+      const defaultConfig = path.join(__dirname, '..', '..', 'resources', 'config.json')   
+      fs.copyFileSync(defaultConfig, configPath)
+    }
   })
+  ipcMain.handle('get-config', () => {
+    const config = fs.readFileSync(configPath, 'utf-8')
+    return JSON.parse(config)
+  })
+  // app.on('ready', () => {
+
+  // })
   // app.on('ready', () => {
   //   app.commandLine.appendSwitch('no-proxy-server')
   // })
@@ -36,7 +49,7 @@ function createWindow(): void {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'))
   }
 }
 
@@ -62,8 +75,7 @@ app.whenReady().then(() => {
   })
 
   //send MessageBox
-  ipcMain.on('show-message-box', (event, arg) => {
-    console.log(event)
+  ipcMain.on('show-message-box', (event, arg) => {    
     const { title, message } = arg
     const options = {
       title,
@@ -74,18 +86,18 @@ app.whenReady().then(() => {
   })
 
   ipcMain.on('modificarConfiguracion', (event, newData) => {
-    const filePath = join(__dirname, '..', '..', 'resources', 'config.json')
-    
+    const filePath = path.join(app.getPath('userData'), 'config.json')
+
     fs.writeFile(filePath, newData, (err) => {
       if (err) {
         event.reply('file-modification-error', err.message)
-      } else {        
+      } else {
         event.reply('file-modification-success', 'File modified successfully')
       }
     })
   })
   createWindow()
-
+ 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.

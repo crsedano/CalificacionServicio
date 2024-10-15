@@ -40,7 +40,7 @@ const Configuracion = () => {
                            
                         });
                         window.electron.ipcRenderer.on('file-modification-error', (event, errorMessage) => {
-                            console.log(event)
+                    
                            Swal.fire({
                                 icon: 'error',
                                 title: 'Error',

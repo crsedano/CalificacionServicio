@@ -8,5 +8,6 @@ declare global {
     CargaConfig: {
       getConfiguracion: () => configuracion
     }
+  
   }
 }
