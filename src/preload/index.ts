@@ -11,17 +11,17 @@ const api = {}
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)    
-    const filePath = join(__dirname, '..', '..','resources', 'config.json')
-  
+    contextBridge.exposeInMainWorld('api', api)
+    const filePath = join(__dirname, '..', '..', 'resources', 'config.json')
+
     fs.readFile(filePath, 'utf8', (err, data) => {
       if (err) {
         console.error('Error al leer el archivo JSON:', err)
         return
       }
-      const jsonData = JSON.parse(data)     
+      const jsonData = JSON.parse(data)
       contextBridge.exposeInMainWorld('CargaConfig', {
-        getConfiguracion: () => jsonData      
+        getConfiguracion: () => jsonData
       })
     })
   } catch (error) {

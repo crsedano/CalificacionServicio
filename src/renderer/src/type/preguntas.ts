@@ -1,7 +1,16 @@
 export type preguntas = {
-    id: string;
-    posicion: number;
-    pregunta: string;    
-    calificacion: number;
-        
+  id: number
+  posicion: number
+  pregunta: string
+  calificacion: number
+}
+
+export type calificacionType = {
+  id: number
+  calificacion: number
+}
+export type response<T> = {
+  success: boolean
+  data: T
+  message: string
 }

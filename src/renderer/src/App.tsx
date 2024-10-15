@@ -1,47 +1,45 @@
-import { useEffect, useState } from 'react'
+ /* eslint-disable */
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { configuracion } from './type/configuracion'
-import { preguntas } from './type/preguntas'
+import { calificacionType, preguntas, response } from './type/preguntas'
 import Preguntas from './components/Preguntas'
-import {QRCode} from 'react-qrcode-logo'
+import { QRCode } from 'react-qrcode-logo'
 import logo from './assets/logo.png'
+import Configuracion from './components/Configuracion'
+import axios from 'axios'
+import Loading from './components/Loading'
 function App(): JSX.Element {
   const [conf, setConfiguracion] = useState<configuracion>()
   const [posicion, setPosicion] = useState<number>(0)
   const [final, setFinal] = useState<boolean>(false)
   const [segundos, setSegundos] = useState<number>(0)
-  const tiempo: number = 5000
-  const [preguntas, setPreguntas] = useState<preguntas[]>([
-    {
-      id: '1',
-      posicion: 1,
-      pregunta: '¿Qué tan satisfecho te encuentras con nuestro servicio?',
-      calificacion: 0
-    },
-    {
-      id: '2',
-      posicion: 2,
-      pregunta: '¿Qué tan satisfecho te encuentras con la universidad',
-      calificacion: 0
-    },
-    {
-      id: '3',
-      posicion: 3,
-      pregunta: '¿Qué tan satisfecho te encuentras con la atención?',
-      calificacion: 0
-    }
-  ])
- // const handleCloseApp = (): void => window.electron.ipcRenderer.send('cerrar-app')
+  const tiempo: number = 60000
+  const [preguntas, setPreguntas] = useState<response<preguntas[]>>({} as response<preguntas[]>)
+  const _calificacion = useRef<calificacionType[]>([])
+  const [respCalificacion, setRespCalificacion] = useState<response<string>>({} as response<string>)
+  const [loading, setLoading] = useState<boolean>(false)
+  // const handleCloseApp = (): void => window.electron.ipcRenderer.send('cerrar-app')
   useEffect(() => {
-    setPreguntas(preguntas)
     const obtenerConfiguracion = async (): Promise<void> => {
-      /* eslint-disable */
-      const data = await window.CargaConfig.getConfiguracion()
+     
+      const data = await window.CargaConfig.getConfiguracion()    
       setConfiguracion(data)
     }
     obtenerConfiguracion()
-    console.log(conf)
+    
   }, [])
+  useEffect(()=>{    
+    if(conf?.OficinaId != null){
+      setLoading(true)
+      axios.get(import.meta.env.VITE_URL_API + 'Pregunta/GetPreguntas?Id=' + conf?.OficinaId)
+        .then((response) => {
+          setPreguntas(response.data)
+        }).finally(()=>{
+          setLoading(false)
+        })
+      }
+  },[conf])
   //const handleNotificacion = (): void => {
     // window.electron.ipcRenderer.send('show-message-box', {
     //   title: 'Atención',
@@ -56,12 +54,26 @@ function App(): JSX.Element {
     //   console.log('click en notificación')
     // }
   //}
-  const handleNext = (): void => {
-    if (posicion < preguntas.length - 1) {
+
+  const handleNext = (calificacion:number, id: number): void => {
+//console.log("llego el indicen "+id)
+//setPreguntas(preguntas.map((pregunta) => pregunta.id === id ? { ...pregunta, calificacion: calificacion } : pregunta))
+ _calificacion.current.push({id,calificacion} as calificacionType)
+    if (posicion < preguntas.data.length-1 ) {
       setPosicion(posicion + 1)
     } else {
+      setLoading(true)
+      axios.post(import.meta.env.VITE_URL_API + 'Respuesta/SendReply', _calificacion.current).then((response) => {
+        setRespCalificacion(response.data)
+      }).catch((error) => {
+        setRespCalificacion({success:false,data:'',message:error.message})
+      }).finally(()=>{
+        setLoading(false)
+      })
+      
       setFinal(true)
-      //handleNotificacion()
+      _calificacion.current = []
+
     }
   }
   const variants = {
@@ -117,10 +129,10 @@ function App(): JSX.Element {
       clearInterval(intervalo!)
     }
   }, [final])
-  console.log(segundos)
-  /* eslint-disable */
+  
   return (
     <div className="relative bg-campus bg-cover  h-screen select-none ">
+      {loading&&<Loading /> }
       <motion.div
         variants={variantsP}
         animate={!final ? 'visible' : 'hidden'}
@@ -129,9 +141,12 @@ function App(): JSX.Element {
         {/* <h1 className="font-bold text-6xl uppercase text-center  drop-shadow-md  text-black bg-white py-4 px-9">
           Calificación de atención al cliente {conf?.nombre || ''}
         </h1> */}
+        {conf?.OficinaId == "0" ? <Configuracion/>
+        :
         <div className="flex overflow-hidden justify-center w-full">
-          {preguntas.length > 0 &&
-            preguntas.map((pregunta, index) => (
+
+          {preguntas.success ? preguntas?.data?.length > 0 ?
+            preguntas?.data?.map((pregunta, index) => (
               <motion.div
                 key={index}
                 className={`${posicion == index ? 'visible' : 'hidden'} w-[90%]`}
@@ -140,15 +155,23 @@ function App(): JSX.Element {
               >
                 <Preguntas pregunta={pregunta} handleNext={handleNext} className={``} />
               </motion.div>
-            ))}
-        </div>
-        {/* <button className='bg-lime-300' onClick={()=>setPosicion(0)}>volverrrr</button> */}
+            )): <div className="bg-white rounded-md p-8 flex flex-col justify-center items-center gap-6">
+              <p className="text-center text-black">
+                No se asignaron preguntas para la oficina, intente mas tarde.
+                </p>
+           </div> : <div className="bg-white rounded-md p-8 flex flex-col justify-center items-center gap-6">
+              <p className="text-center text-black">
+                Ocurrio un error al cargar las preguntas, por favor intente mas tarde.
+                </p></div>}
+        </div>}
       </motion.div>
+   
       <motion.div
         variants={variantsP}
         animate={final ? 'visible' : 'hidden'}
         className={`${final ? 'visible' : 'hidden'} absolute  flex flex-col h-full  backdrop-brightness-50 justify-center items-center gap-6 w-full`}
       >
+           {respCalificacion.success ? 
         <div className="bg-white p-8 flex flex-col justify-center items-center gap-6">
           <p className="text-center text-black">
             Gracias por completar la encuesta, esto nos ayura a mejorar nuestro servicio, <br/> si desea añadir un comentario, escanea el siguiente código <span className='font-bold'>QR</span>
@@ -160,7 +183,7 @@ function App(): JSX.Element {
           fgColor='#000'
           logoImage={logo}
           style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-          value={'https://elecciones.upla.edu.pe'}
+          value={`https://satisfaccion.upla.edu.pe/Encuesta/${respCalificacion.data}`}
           qrStyle={"dots"}
           logoPaddingStyle={'square'}
           logoWidth={130}//130
@@ -174,8 +197,16 @@ function App(): JSX.Element {
           <button onClick={() => handleInciar()} className="bg-lime-300 p-2 rounded-md hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300">
             Calificar Nuevamente ({ tiempo / 1000 - segundos})
           </button>
-          </div>
+          </div>: <div className="bg-white p-8 flex flex-col justify-center items-center gap-6">
+          <p className="text-center text-black">
+            Ocurrio un error al enviar la calificación, por favor intente nuevamente
+          </p>
+          <button onClick={() => handleInciar()} className="bg-lime-300 p-2 rounded-md hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300">
+            Calificar Nuevamente ({ tiempo / 1000 - segundos})
+          </button>
+            </div>}
       </motion.div>
+      
       <p className="absolute bottom-5 text-white translate-x-1/2 right-[50%] text-xl italic font-[Inter-Thin]">
         Oficina de Informática y Sistemas
       </p>

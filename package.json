@@ -23,21 +23,17 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
+    "axios": "^1.7.7",
     "electron-updater": "^6.1.7",
     "framer-motion": "11.0.28",
-    "react-qrcode-logo": "2.9.0"
+    "path-browserify": "^1.0.1",
+    "react-qrcode-logo": "2.9.0",
+    "sweetalert2": "11.14.3"
   },
   "build": {
     "appId": "com.example.myapp",
     "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "arm64"
-          ]
-        }
-      ]
+      "target": ["nsis", "appx"]
     },
     "linux": {
       "target": [
@@ -45,7 +41,6 @@
         "AppImage"
       ]
     }
-  
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^2.0.0",

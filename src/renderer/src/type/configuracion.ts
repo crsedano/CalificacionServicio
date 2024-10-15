@@ -1,1 +1,1 @@
-export type configuracion = {name:string,facID:string,nombre:string}
+export type configuracion = { name: string; OficinaId: string }

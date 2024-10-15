@@ -2,27 +2,30 @@ import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import fs from 'fs'
 
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,
-    show: true,    
-   frame: false,//cambiar para ocultar la barra de tareas
-   fullscreen: true, //cambia 
+    width: 720,
+    height: 576,
+    show: true,
+    frame: false, //cambiar para ocultar la barra de tareas
+    fullscreen: true, //cambia
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false    
     }
   })
-
+  //mainWindow.webContents.session.setProxy({ proxyRules: 'https://satisfaccion.upla.edu.pe' })
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
   })
-
+  // app.on('ready', () => {
+  //   app.commandLine.appendSwitch('no-proxy-server')
+  // })
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
@@ -51,18 +54,16 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
- 
-
   // IPC test
   ipcMain.on('cerrar-app', () => {
-    if(process.platform !== 'darwin'){
+    if (process.platform !== 'darwin') {
       app.quit()
     }
   })
 
   //send MessageBox
   ipcMain.on('show-message-box', (event, arg) => {
-    console.log("se ejecuto",event)
+    console.log(event)
     const { title, message } = arg
     const options = {
       title,
@@ -71,8 +72,18 @@ app.whenReady().then(() => {
     }
     dialog.showMessageBox(options)
   })
-  
 
+  ipcMain.on('modificarConfiguracion', (event, newData) => {
+    const filePath = join(__dirname, '..', '..', 'resources', 'config.json')
+    
+    fs.writeFile(filePath, newData, (err) => {
+      if (err) {
+        event.reply('file-modification-error', err.message)
+      } else {        
+        event.reply('file-modification-success', 'File modified successfully')
+      }
+    })
+  })
   createWindow()
 
   app.on('activate', function () {
@@ -86,7 +97,7 @@ app.whenReady().then(() => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-  if(process.platform !== 'darwin'){
+  if (process.platform !== 'darwin') {
     app.quit()
   }
 })
