@@ -20,7 +20,7 @@ const Preguntas:React.FC<PreguntasProps> = ({className,handleNext,pregunta}): JS
               className='bg-red-700 rounded-full text-black/70' 
               width="120px" 
               height="120px" />
-              <span className='bg-lime-300 p-2 rounded-md hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300 text-black text-sm font-semibold'>Muy Insatisfecho</span></button>
+              <span className='bg-lime-300 p-2 rounded-md hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300 text-black text-sm font-semibold'>Muy en desacuerdo</span></button>
           <button 
           className='hover:scale-105 transition-all duration-300 ease-in-out flex flex-col justify-center items-center gap-3' 
           onClick={()=>handleNext(1,pregunta.id)}>
@@ -28,7 +28,7 @@ const Preguntas:React.FC<PreguntasProps> = ({className,handleNext,pregunta}): JS
               className='bg-orange-600 rounded-full text-black/70' 
               width="120px" 
               height="120px" />
-              <span className='bg-lime-300 p-2 rounded-md hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300 text-black text-sm font-semibold'>Insatisfecho</span></button>
+              <span className='bg-lime-300 p-2 rounded-md hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300 text-black text-sm font-semibold'>En desacuerdo</span></button>
           <button 
           className='hover:scale-105 transition-all duration-300 ease-in-out flex flex-col justify-center items-center gap-3' 
           onClick={()=>handleNext(2,pregunta.id)}>
@@ -41,13 +41,13 @@ const Preguntas:React.FC<PreguntasProps> = ({className,handleNext,pregunta}): JS
           onClick={()=>handleNext(3,pregunta.id)}>
               <NivelCuatro className='bg-green-500 rounded-full text-black/70' 
             width="120px" 
-            height="120px" /><span className='bg-lime-300 p-2 rounded-md hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300 text-black text-sm font-semibold'>Satisfecho</span></button>
+            height="120px" /><span className='bg-lime-300 p-2 rounded-md hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300 text-black text-sm font-semibold'>De acuerdo</span></button>
           <button 
           className='hover:scale-105 transition-all duration-300 ease-in-out flex flex-col justify-center items-center gap-3' 
           onClick={()=>handleNext(4,pregunta.id)}>
               <NivelCinco className='bg-green-800 rounded-full text-black/70' 
             width="120px" 
-            height="120px" /><span className='bg-lime-300 p-2 rounded-md hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300 text-black text-sm font-semibold'>Muy Satisfecho</span></button>          
+            height="120px" /><span className='bg-lime-300 p-2 rounded-md hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300 text-black text-sm font-semibold'>Muy de acuerdo</span></button>          
         </div>
         {/* <button onClick={handleCloseApp}>cerrar</button> */}
         </div>
