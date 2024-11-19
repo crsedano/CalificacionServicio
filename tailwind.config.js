@@ -4,7 +4,7 @@ module.exports = {
   theme: {
     extend: {
       backgroundImage: {
-        'campus': 'url("/src/assets/Fondo01.jpg")',
+        'campus': 'url("/src/assets/pderecho.webp")',
       }
     }
   },

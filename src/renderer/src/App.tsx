@@ -20,6 +20,7 @@ function App(): JSX.Element {
   const _calificacion = useRef<calificacionType[]>([])
   const [respCalificacion, setRespCalificacion] = useState<response<string>>({} as response<string>)
   const [loading, setLoading] = useState<boolean>(false)
+  const [pagina, setPagina] = useState<number>(1)
   // const handleCloseApp = (): void => window.electron.ipcRenderer.send('cerrar-app')
 
 
@@ -77,7 +78,7 @@ function App(): JSX.Element {
       }).finally(()=>{
         setLoading(false)
       })
-      
+      setPagina(3)
       setFinal(true)
       _calificacion.current = []
 
@@ -115,14 +116,21 @@ function App(): JSX.Element {
     
     
 await getPreguntas()    
+setPosicion(0)
+setPagina(2)
 
-    setPosicion(0)
-    setFinal(false)
+    
+    
+    //setFinal(false)
+  }
+  const handleVolverInicio = ()=>{
+    setPagina(1)
   }
   const showContent = () => {
 
-    setFinal(false)
-    setPosicion(0)
+    //setFinal(false)
+  //  setPagina(2)
+  //  setPosicion(0)
   }
   useEffect(() => {
     let temporizador: null | ReturnType<typeof setTimeout> = null
@@ -140,19 +148,35 @@ await getPreguntas()
       clearInterval(intervalo!)
     }
   }, [final])
-  
+  console.log(pagina)
   return (
     <div className="relative bg-campus bg-cover  h-screen select-none ">
       {loading&&<Loading /> }
       <motion.div
+      variants={variantsP}
+      animate={pagina == 1 ? 'visible' : 'hidden'}
+      className={`${pagina == 1 ? 'visible' : 'hidden'} absolute  flex flex-col h-full  backdrop-brightness-50 justify-center items-center w-full`}
+      >
+        <div className="font-bold text-6xl uppercase text-center  drop-shadow-md  text-black bg-white p-9 rounded-lg">
+
+        
+        <h1>
+          Califica nuestra atención
+        </h1>
+        <button onClick={() => handleInciar()} className="bg-lime-300 p-2 px-6 rounded-xl hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300 text-xl mt-10">
+          Inicio
+        </button>
+        </div>
+      </motion.div>
+      <motion.div
         variants={variantsP}
-        animate={!final ? 'visible' : 'hidden'}
-        className={`${!final ? 'visible' : 'hidden'} absolute  flex flex-col h-full  backdrop-brightness-50 justify-center items-center w-full`}
+        animate={pagina == 2  ? 'visible' : 'hidden'}
+        className={`${pagina == 2  ? 'visible' : 'hidden'} absolute  flex flex-col h-full  backdrop-brightness-50 justify-center items-center w-full`}
       >
         {/* <h1 className="font-bold text-6xl uppercase text-center  drop-shadow-md  text-black bg-white py-4 px-9">
           Calificación de atención al cliente {conf?.nombre || ''}
         </h1> */}
-        {conf?.OficinaId == "0" ? <Configuracion/>
+         {conf?.OficinaId == "0" ? <Configuracion/>
         :
         <div className="flex overflow-hidden justify-center w-full">
 
@@ -174,16 +198,18 @@ await getPreguntas()
               <p className="text-center text-black">
                 Ocurrio un error al cargar las preguntas, por favor intente mas tarde.
                 </p></div>}
-        </div>}
+        </div>} 
       </motion.div>
    
       <motion.div
         variants={variantsP}
-        animate={final ? 'visible' : 'hidden'}
-        className={`${final ? 'visible' : 'hidden'} absolute  flex flex-col h-full  backdrop-brightness-50 justify-center items-center gap-6 w-full`}
+        animate={pagina == 3 ? 'visible' : 'hidden'}
+        className={`${pagina == 3 ? 'visible' : 'hidden'} absolute  flex flex-col h-full  backdrop-brightness-50 justify-center items-center gap-6 w-full`}
       >
-           {respCalificacion.success ? 
-        <div className="bg-white p-8 flex flex-col justify-center items-center gap-6">
+          {
+           respCalificacion.success 
+          ? 
+        <div className="bg-white p-11 flex flex-col justify-center items-center gap-6 text-2xl">
           <p className="text-center text-black">
             Gracias por completar la encuesta, esto nos ayura a mejorar nuestro servicio, <br/> si desea añadir un comentario, escanea el siguiente código <span className='font-bold'>QR</span>
           </p>
@@ -205,14 +231,14 @@ await getPreguntas()
           // viewBox={`0 0 256 256`}
           />
           </div>
-          <button onClick={() => handleInciar()} className="bg-lime-300 p-2 rounded-md hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300">
+          <button onClick={() => handleVolverInicio()} className="bg-lime-300 p-2 rounded-md hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300">
             Calificar Nuevamente ({ tiempo / 1000 - segundos})
           </button>
           </div>: <div className="bg-white p-8 flex flex-col justify-center items-center gap-6">
           <p className="text-center text-black">
             Ocurrio un error al enviar la calificación, por favor intente nuevamente
           </p>
-          <button onClick={() => handleInciar()} className="bg-lime-300 p-2 rounded-md hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300">
+          <button onClick={() => handleVolverInicio()} className="bg-lime-300 p-2 rounded-md hover:bg-lime-500 hover:scale-105 transition-all ease-in-out duration-300">
             Calificar Nuevamente ({ tiempo / 1000 - segundos})
           </button>
             </div>}
